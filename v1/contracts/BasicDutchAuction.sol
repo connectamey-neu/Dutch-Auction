@@ -2,29 +2,30 @@
 pragma solidity >=0.7.0 <0.9.0;
 
 contract Auction {
+    uint256 public blocknumber;
     uint256 public initialPrice = 5 ether;
     uint256 public immutable startAt;
     uint256 public immutable endsAt;
-    uint256 public immutable reservePrice = 2 ether;
+    uint256 public immutable reservePrice = 1.5 ether;
     uint256 public immutable offerPriceDecrement = 0.01 ether;
     uint256 public immutable numBlocksAuctionOpen = 10;
     address public donor;
     uint256 public finalPrice;
 
     constructor() {
-        startAt = block.timestamp;
-        endsAt = block.timestamp + 300 minutes;
+        startAt = block.number;
+        endsAt = 10;
         initialPrice = reservePrice + numBlocksAuctionOpen*offerPriceDecrement;
+        blocknumber = block.number;
     }
 
     function price() public view returns (uint256) {
-        if (endsAt < block.timestamp) {
+        if (endsAt < block.number) {
             return reservePrice;
         }
 
-        uint256 minutesElapsed = (block.timestamp - startAt) / 60;
+        return initialPrice  - (block.number * offerPriceDecrement);
 
-        return initialPrice  - (minutesElapsed * offerPriceDecrement);
     }
 
     function receiveMoney() public payable {
