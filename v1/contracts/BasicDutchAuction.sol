@@ -3,6 +3,7 @@ pragma solidity >=0.7.0 <0.9.0;
 
 contract Auction {
     uint256 public blocknumber;
+    uint256 public offerprice = 0 ether;
     uint256 public initialPrice = 5 ether;
     uint256 public immutable startAt;
     uint256 public immutable endsAt;
