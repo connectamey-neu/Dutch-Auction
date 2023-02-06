@@ -32,13 +32,13 @@ const {
         expect(await basicdutchauction.initialPrice()).to.equal(bigNum);
       });
 
-      it("Check if the bid is higher ", async function () {
+      it("Accepts higher bid ", async function () {
         var bigNum = BigInt("1600000000000000000");
         const { basicdutchauction, owner } = await loadFixture(BasicDutchAuctiondeploy);
         await expect (basicdutchauction.receiveMoney({value:bigNum})).eventually.to.ok;
       });
 
-      it("Shouldn't transact if the bid is lower", async function () {
+      it("Rejects lower bid", async function () {
         var bigNum = BigInt("1400000000000000000");
         const { basicdutchauction, owner } = await loadFixture(BasicDutchAuctiondeploy);
         await expect (basicdutchauction.receiveMoney({value:bigNum})).to.be.revertedWith('Not enough ether sent.');
