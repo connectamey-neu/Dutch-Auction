@@ -21,7 +21,7 @@ contract Auction {
     }
 
     function price() public view returns (uint256) {
-        if (endsAt < block.number) {
+        if (endsAt < blocknumber) {
             return reservePrice;
         }
 
@@ -36,4 +36,8 @@ contract Auction {
         donor = msg.sender;
         finalPrice = price();
     }
+
+      function modifyBlockNumber() public {
+    blocknumber = 15;
+  }
 }
