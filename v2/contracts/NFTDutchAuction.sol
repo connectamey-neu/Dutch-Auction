@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+import "hardhat/console.sol";
 pragma solidity >=0.7.0 <0.9.0;
 interface IERC721 {
     function transferFrom(address _from, address _to, uint _nftId) external;
@@ -11,12 +12,12 @@ contract NFTDutchAuction {
     uint256 public reservePrice = 1.5 ether;
     uint256 public offerPriceDecrement = 0.01 ether;
     uint256 public numBlocksAuctionOpen = 10;
-    address public ADDRESS_TO_TRANSFER_TOKEN;
     uint256 public finalPrice;
     uint256 public ethersent;
     IERC721 public immutable nft;
     uint public nftTokenId;
     address payable public immutable seller;
+    address payable public sender;
 
     constructor(address erc721TokenAddress, uint256 _nftTokenId, uint256 _reservePrice, uint256 _numBlocksAuctionOpen, uint256 _offerPriceDecrement) {
         startAt = block.number;
@@ -29,7 +30,6 @@ contract NFTDutchAuction {
         seller = payable(msg.sender);
         nft = IERC721(erc721TokenAddress);
         nftTokenId = _nftTokenId;
-        ADDRESS_TO_TRANSFER_TOKEN = erc721TokenAddress;
     }
 
     function price() public view returns (uint256) {
@@ -43,8 +43,12 @@ contract NFTDutchAuction {
 
     function receiveMoney() public payable {
         finalPrice = price();
-        require(seller == address(0), "Someone has already bought the NFT");
-        require(msg.value >= finalPrice, "Not enough ether sent.");
+        sender = payable(msg.sender);
+           require(msg.value >= finalPrice, "Not enough ether sent.");
+        require(seller == address(4), "Someone has already bought the NFT");
+        console.log("seller: ", seller);
+         console.log("sender: ", msg.sender);
+        //  console.log("Owner is ", ownerOf(1));
         nft.transferFrom(seller, msg.sender, nftTokenId);
         uint refund = msg.value - finalPrice;
         if (refund > 0) {
@@ -54,4 +58,8 @@ contract NFTDutchAuction {
 
 
     }
+      function modifyBlockNumber() public {
+    blocknumber = 15;
+  }
+
 }

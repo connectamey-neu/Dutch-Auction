@@ -1,124 +1,109 @@
 import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
-import { expect } from "chai";
+import { expect, assert } from "chai";
 import { ethers } from "hardhat";
+import {getContractAddress } from "@ethersproject/address";
 
-describe("Lock", function () {
+
+describe("NFTDutchAuction", function () {
   // We define a fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
-  async function deployOneYearLockFixture() {
-    const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-    const ONE_GWEI = 1_000_000_000;
-
-    const lockedAmount = ONE_GWEI;
-    const unlockTime = (await time.latest()) + ONE_YEAR_IN_SECS;
-
+  async function deployNFTDutchAuctionSmartContract() {
+  
     // Contracts are deployed using the first signer/account by default
     const [owner, otherAccount] = await ethers.getSigners();
+    const NFTDutchAuction = await ethers.getContractFactory("NFTDutchAuction");
 
-    const Lock = await ethers.getContractFactory("Lock");
-    const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+    //Mint NFT on the owner's account
+    const TechnoCleverNFT = await ethers.getContractFactory("TechnoCleverNFT");
+    const technoclevernft = await TechnoCleverNFT.deploy();
 
-    return { lock, unlockTime, lockedAmount, owner, otherAccount };
+    //Mint NFT on the owner's account
+    await technoclevernft.safeMint(owner.getAddress(), {gasLimit: 250000, value:ethers.utils.parseEther("1.0")});
+  
+    // const deployedTCNFT = await ethers.getContractAt("TechnoCleverNFT", "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").;
+
+    // const deployedTCNFT = await (TechnoCleverNFT.attach(otherAccount.address));
+    const transactionCount = await owner.getTransactionCount();
+    const technoclevertokenaddress = getContractAddress({
+        from: owner.address,
+        nonce: transactionCount
+      })
+    
+    const nftdutchauction =  await NFTDutchAuction.deploy(technoclevertokenaddress, 1,ethers.utils.parseEther("1.0"), 10, ethers.utils.parseEther("0.01"));   
+    // await technoclevernft.approve(technoclevertokenaddress, 1);
+    return { technoclevernft, owner, otherAccount, technoclevertokenaddress, nftdutchauction };
   }
 
   describe("Deployment", function () {
-    it("Should set the right unlockTime", async function () {
-      const { lock, unlockTime } = await loadFixture(deployOneYearLockFixture);
-
-      expect(await lock.unlockTime()).to.equal(unlockTime);
+    it("Creates TCNFT NFT Token Collection", async function () {
+      const { technoclevernft, technoclevertokenaddress
+ } = await loadFixture(deployNFTDutchAuctionSmartContract);
+      expect(await technoclevernft.name()).to.exist;
+      expect(await technoclevernft.name()).to.equal('TechnoCleverNFT');
+      console.log("Contract address is", technoclevertokenaddress);
     });
 
-    it("Should set the right owner", async function () {
-      const { lock, owner } = await loadFixture(deployOneYearLockFixture);
-
-      expect(await lock.owner()).to.equal(owner.address);
+    it("TCNFT Token is minted to owner", async function () {
+      const { technoclevernft, owner } = await loadFixture(deployNFTDutchAuctionSmartContract);
+      expect(await technoclevernft.ownerOf(1)).to.equal(owner.address);
     });
 
-    it("Should receive and store the funds to lock", async function () {
-      const { lock, lockedAmount } = await loadFixture(
-        deployOneYearLockFixture
-      );
 
-      expect(await ethers.provider.getBalance(lock.address)).to.equal(
-        lockedAmount
-      );
+    it("NFTDutchAuction is deployed and initial price is 1.07ETH", async function () {
+      const { nftdutchauction } = await loadFixture(deployNFTDutchAuctionSmartContract);
+      expect(await nftdutchauction.price()).to.equal("1070000000000000000");
     });
 
-    it("Should fail if the unlockTime is not in the future", async function () {
-      // We don't use the fixture here because we want a different deployment
-      const latestTime = await time.latest();
-      const Lock = await ethers.getContractFactory("Lock");
-      await expect(Lock.deploy(latestTime, { value: 1 })).to.be.revertedWith(
-        "Unlock time should be in the future"
-      );
-    });
-  });
 
-  describe("Withdrawals", function () {
-    describe("Validations", function () {
-      it("Should revert with the right error if called too soon", async function () {
-        const { lock } = await loadFixture(deployOneYearLockFixture);
-
-        await expect(lock.withdraw()).to.be.revertedWith(
-          "You can't withdraw yet"
-        );
+      it("Check if the starting block is 0 & current block is 3 since we've deployed NFT, minted & now deployed current contract", async function () {
+        const { nftdutchauction, owner } = await loadFixture(deployNFTDutchAuctionSmartContract);
+        expect(await nftdutchauction.blocknumber()).to.equal(3);
       });
-
-      it("Should revert with the right error if called from another account", async function () {
-        const { lock, unlockTime, otherAccount } = await loadFixture(
-          deployOneYearLockFixture
-        );
-
-        // We can increase the time in Hardhat Network
-        await time.increaseTo(unlockTime);
-
-        // We use lock.connect() to send a transaction from another account
-        await expect(lock.connect(otherAccount).withdraw()).to.be.revertedWith(
-          "You aren't the owner"
-        );
+  
+  
+      it("Accepts higher bid ", async function () {
+        var bigNum = BigInt("2000000000000000000");
+        const { nftdutchauction, owner } = await loadFixture(deployNFTDutchAuctionSmartContract);
+        await expect(nftdutchauction.receiveMoney({ value: bigNum })).eventually.to.ok;
       });
-
-      it("Shouldn't fail if the unlockTime has arrived and the owner calls it", async function () {
-        const { lock, unlockTime } = await loadFixture(
-          deployOneYearLockFixture
-        );
-
-        // Transactions are sent using the first signer by default
-        await time.increaseTo(unlockTime);
-
-        await expect(lock.withdraw()).not.to.be.reverted;
+  
+      it("Rejects lower bid", async function () {
+        var bigNum = BigInt("100000000000000000");
+        const { nftdutchauction, owner } = await loadFixture(deployNFTDutchAuctionSmartContract);
+        await expect(nftdutchauction.receiveMoney({ value: bigNum })).to.be.revertedWith('Not enough ether sent.');
       });
+  
+      it("Rejects second bid ", async function () {
+        var bigNum = BigInt("1600000000000000000");
+        const { nftdutchauction, owner } = await loadFixture(deployNFTDutchAuctionSmartContract);
+        await expect(nftdutchauction.receiveMoney({ value: bigNum })).to.be.revertedWith('Someone has already bought the NFT');
+      });
+  
+      
+      it("After block 10, price should be 1.5 ETH. Here, block number is 15", async function () {
+        const { technoclevertokenaddress, owner } = await loadFixture(deployNFTDutchAuctionSmartContract);
+        var priceBigNum = BigInt("1000000000000000000");
+        const ModifyVariable = await ethers.getContractFactory("NFTDutchAuction");
+        const contract =  await ModifyVariable.deploy(technoclevertokenaddress, 1,ethers.utils.parseEther("1.0"), 10, ethers.utils.parseEther("0.01"));          await contract.deployed();
+        await contract.modifyBlockNumber();
+        const newX = await contract.blocknumber();
+        assert.equal(newX.toNumber(), 15);
+        expect(await contract.price()).to.equal(priceBigNum);
+      });
+  
+
+    it("Approve technoclevernft for transfer function", async function () {
+      const { technoclevernft, otherAccount, nftdutchauction, technoclevertokenaddress } = await loadFixture(deployNFTDutchAuctionSmartContract);
+      expect(await technoclevernft.approve(technoclevertokenaddress, 1)).to.exist;
+      // expect(await nftdutchauction.receiveMoney({gasLimit: 250000, value:ethers.utils.parseEther("2")})).to.exist;
+      console.log("seller: ", nftdutchauction.seller());
+      console.log("sender: ", nftdutchauction.sender());
+      expect (await nftdutchauction.receiveMoney({gasLimit: 250000, value:ethers.utils.parseEther("2")})).to.exist;
     });
+ 
 
-    describe("Events", function () {
-      it("Should emit an event on withdrawals", async function () {
-        const { lock, unlockTime, lockedAmount } = await loadFixture(
-          deployOneYearLockFixture
-        );
+});
 
-        await time.increaseTo(unlockTime);
-
-        await expect(lock.withdraw())
-          .to.emit(lock, "Withdrawal")
-          .withArgs(lockedAmount, anyValue); // We accept any value as `when` arg
-      });
-    });
-
-    describe("Transfers", function () {
-      it("Should transfer the funds to the owner", async function () {
-        const { lock, unlockTime, lockedAmount, owner } = await loadFixture(
-          deployOneYearLockFixture
-        );
-
-        await time.increaseTo(unlockTime);
-
-        await expect(lock.withdraw()).to.changeEtherBalances(
-          [owner, lock],
-          [lockedAmount, -lockedAmount]
-        );
-      });
-    });
-  });
 });

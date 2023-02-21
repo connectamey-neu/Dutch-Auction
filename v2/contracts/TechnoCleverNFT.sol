@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
-
-import "@openzeppelin/contracts@4.8.1/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts@4.8.1/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts@4.8.1/security/Pausable.sol";
-import "@openzeppelin/contracts@4.8.1/access/Ownable.sol";
-import "@openzeppelin/contracts@4.8.1/utils/Counters.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract TechnoCleverNFT is ERC721, ERC721Enumerable, Pausable, Ownable {
     using Counters for Counters.Counter;
