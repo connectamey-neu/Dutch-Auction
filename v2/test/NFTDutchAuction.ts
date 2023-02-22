@@ -66,7 +66,7 @@ describe("NFTDutchAuction", function () {
     it("Accepts higher bid ", async function () {
       var bigNum = BigInt("20000000000000000000");
       const { nftdutchauction } = await loadFixture(deployNFTDutchAuctionSmartContract);
-      await expect(nftdutchauction.receiveMoney({ value: bigNum })).eventually.to.ok;
+      await expect(nftdutchauction.receiveMoney({ value: bigNum })).to.exist;
     });
 
     it("Rejects lower bid", async function () {
@@ -96,11 +96,18 @@ describe("NFTDutchAuction", function () {
 
     it("Approve technoclevernft for transfer function", async function () {
       const { technoclevernft, otherAccount, nftdutchauction, technoclevertokenaddress } = await loadFixture(deployNFTDutchAuctionSmartContract);
-      await technoclevernft.approve(technoclevertokenaddress, 1)
+
+      expect (await technoclevernft.approve(technoclevertokenaddress, 1)).to.exist;
+
+    });
+
+    it("Call Receive Money", async function () {
+      const { otherAccount, nftdutchauction } = await loadFixture(deployNFTDutchAuctionSmartContract);
+      // await technoclevernft.approve(technoclevertokenaddress, 1)
       // expect(await technoclevernft.approve(technoclevertokenaddress, 1)).to.reverted;
       // expect(await nftdutchauction.receiveMoney({gasLimit: 250000, value:ethers.utils.parseEther("2")})).to.exist;
       const contract = await (await ethers.getContractFactory("NFTDutchAuction")).attach(otherAccount.address);
-      expect (await contract.receiveMoney({gasLimit: 250000, value:ethers.utils.parseEther("2")})).eventually.to.ok;
+      expect (await contract.receiveMoney({gasLimit: 250000, value:ethers.utils.parseEther("2")})).to.exist;
     });
 
     
