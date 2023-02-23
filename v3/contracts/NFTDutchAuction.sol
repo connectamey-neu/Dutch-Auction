@@ -44,13 +44,24 @@ contract NFTDutchAuction {
     function receiveMoney() public payable {
         finalPrice = price();
         sender = payable(msg.sender);
-           require(msg.value >= finalPrice, "Not enough ether sent.");
-        // require(seller == address(2), "Someone has already bought the NFT");
-        console.log("seller: ", seller);
+         console.log("seller: ", seller);
+         console.log("sender: ", sender);
          console.log("sender: ", msg.sender);
+         console.log("sender: ", address(1));
+         console.log("sender: ", address(2));
+         console.log("sender: ", address(3));
+         console.log("sender: ", address(4));
+         console.log("sender: ", address(5));
+         console.log("sender: ", address(6));
+         console.log("sender: ", address(7));
+        require(msg.value >= finalPrice, "Not enough ether sent.");
+        require(seller == sender, "Someone has already bought the NFT");
+
         //  console.log("Owner is ", ownerOf(1));
-        nft.transfer(msg.sender, nftTokenId);
         uint refund = msg.value - finalPrice;
+        console.log("refund: ", refund);
+        console.log("finalprice: ", finalPrice);
+        nft.transfer(msg.sender, nftTokenId);
         if (refund > 0) {
             payable(msg.sender).transfer(refund);
         }

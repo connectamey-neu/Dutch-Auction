@@ -12,7 +12,7 @@ describe("NFTDutchAuction", function () {
   async function deployNFTDutchAuctionSmartContract() {
 
     // Contracts are deployed using the first signer/account by default
-    const [owner, otherAccount] = await ethers.getSigners();
+    const [owner, contractaccount, otherAccount] = await ethers.getSigners();
     const NFTDutchAuction = await ethers.getContractFactory("NFTDutchAuction");
 
     //Mint NFT on the owner's account
@@ -33,16 +33,17 @@ describe("NFTDutchAuction", function () {
 
     const nftdutchauction = await NFTDutchAuction.deploy(technoclevertokenaddress, 1, ethers.utils.parseEther("1.0"), 10, ethers.utils.parseEther("0.01"));
     // await technoclevernft.approve(technoclevertokenaddress, 1);
-    return { technoclevernft, owner, otherAccount, technoclevertokenaddress, nftdutchauction };
+    return { technoclevernft, owner, otherAccount, technoclevertokenaddress, nftdutchauction, contractaccount };
   }
 
   describe("Deployment", function () {
     it("Creates TCNFT NFT Token Collection", async function () {
-      const { technoclevernft, technoclevertokenaddress
+      const { otherAccount, technoclevernft, technoclevertokenaddress
       } = await loadFixture(deployNFTDutchAuctionSmartContract);
       expect(await technoclevernft.name()).to.exist;
       expect(await technoclevernft.name()).to.equal('TC Coin');
       console.log("Contract address is", technoclevertokenaddress);
+      console.log("Other account address is", otherAccount.address);
     });
 
     it("TCNFT Token is minted to owner", async function () {
@@ -63,10 +64,11 @@ describe("NFTDutchAuction", function () {
     });
 
 
-    it("Accepts higher bid ", async function () {
-      var bigNum = BigInt("20000000000000000000");
-      const { nftdutchauction } = await loadFixture(deployNFTDutchAuctionSmartContract);
-      await expect(nftdutchauction.receiveMoney({ value: bigNum })).to.exist;
+    it("Accepts 1.07ETH bid ", async function () {
+      var bigNum = BigInt("1070000000000000000");
+      const { otherAccount, nftdutchauction } = await loadFixture(deployNFTDutchAuctionSmartContract);
+      // await nftdutchauction.connect(otherAccount.address);
+      expect(nftdutchauction.connect(otherAccount).receiveMoney({ value: bigNum })).to.eventually.ok;
     });
 
     it("Rejects lower bid", async function () {
@@ -104,7 +106,8 @@ describe("NFTDutchAuction", function () {
     it("Call Receive Money", async function () {
       const { owner, technoclevernft, otherAccount } = await loadFixture(deployNFTDutchAuctionSmartContract);
       const contract = await (await ethers.getContractFactory("NFTDutchAuction")).attach(otherAccount.address);
-      expect (await contract.receiveMoney({gasLimit: 250000, value:ethers.utils.parseEther("2")})).to.exist; 
+      await contract.connect(otherAccount.address);
+      expect (await contract.receiveMoney({gasLimit: 250000, value:ethers.utils.parseEther("2")})).to.eventually.ok; 
     });
 
     
