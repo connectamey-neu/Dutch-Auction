@@ -2,7 +2,9 @@
 import "hardhat/console.sol";
 pragma solidity >=0.7.0 <0.9.0;
 interface IERC20 {
-    function transfer(address _to, uint _nftId) external;
+    // function transfer(address _to, uint _nftId) external;
+    function transferFrom(address _from, address _to, uint _nftId) external;
+    function balanceOf(address account) external;
 }
 contract NFTDutchAuction {
     uint256 public blocknumber;
@@ -18,6 +20,7 @@ contract NFTDutchAuction {
     uint public nftTokenId;
     address payable public immutable seller;
     address payable public sender;
+    // uint256 public balanceOfSender;
 
     constructor(address erc20TokenAddress, uint256 _nftTokenId, uint256 _reservePrice, uint256 _numBlocksAuctionOpen, uint256 _offerPriceDecrement) {
         startAt = block.number;
@@ -43,25 +46,17 @@ contract NFTDutchAuction {
 
     function receiveMoney() public payable {
         finalPrice = price();
-        sender = payable(msg.sender);
          console.log("seller: ", seller);
-         console.log("sender: ", sender);
+         console.log("Balance of seller: ", seller);
+        //  console.log("sender: ", sender);
          console.log("sender: ", msg.sender);
+         console.log("Token ID: ", nftTokenId);
          console.log("sender: ", address(1));
-         console.log("sender: ", address(2));
-         console.log("sender: ", address(3));
-         console.log("sender: ", address(4));
-         console.log("sender: ", address(5));
-         console.log("sender: ", address(6));
-         console.log("sender: ", address(7));
         require(msg.value >= finalPrice, "Not enough ether sent.");
-        require(seller == sender, "Someone has already bought the NFT");
-
-        //  console.log("Owner is ", ownerOf(1));
         uint refund = msg.value - finalPrice;
         console.log("refund: ", refund);
         console.log("finalprice: ", finalPrice);
-        nft.transfer(msg.sender, nftTokenId);
+        nft.transferFrom(seller, msg.sender, nftTokenId);
         if (refund > 0) {
             payable(msg.sender).transfer(refund);
         }

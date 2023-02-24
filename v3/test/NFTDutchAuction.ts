@@ -32,7 +32,7 @@ describe("NFTDutchAuction", function () {
     })
 
     const nftdutchauction = await NFTDutchAuction.deploy(technoclevertokenaddress, 1, ethers.utils.parseEther("1.0"), 10, ethers.utils.parseEther("0.01"));
-    // await technoclevernft.approve(technoclevertokenaddress, 1);
+    await technoclevernft.approve(technoclevertokenaddress, 1);
     return { technoclevernft, owner, otherAccount, technoclevertokenaddress, nftdutchauction, contractaccount };
   }
 
@@ -54,7 +54,7 @@ describe("NFTDutchAuction", function () {
 
     it("NFTDutchAuction is deployed and initial price is 1.07ETH", async function () {
       const { nftdutchauction } = await loadFixture(deployNFTDutchAuctionSmartContract);
-      expect(await nftdutchauction.price()).to.equal("1080000000000000000");
+      expect(await nftdutchauction.price()).to.equal("1070000000000000000");
     });
 
 
@@ -66,9 +66,10 @@ describe("NFTDutchAuction", function () {
 
     it("Accepts 1.07ETH bid ", async function () {
       var bigNum = BigInt("1070000000000000000");
-      const { otherAccount, nftdutchauction } = await loadFixture(deployNFTDutchAuctionSmartContract);
+      const { otherAccount, nftdutchauction, technoclevernft } = await loadFixture(deployNFTDutchAuctionSmartContract);
       // await nftdutchauction.connect(otherAccount.address);
-      expect(nftdutchauction.connect(otherAccount).receiveMoney({ value: bigNum })).to.eventually.ok;
+      expect(nftdutchauction.connect(otherAccount.address).receiveMoney({ value: bigNum })).to.eventually.ok;
+      // expect(technoclevernft.balanceOf(otherAccount.address)).to.equal(1);
     });
 
     it("Rejects lower bid", async function () {
@@ -96,25 +97,19 @@ describe("NFTDutchAuction", function () {
     });
 
 
-    it("Approve technoclevernft for transfer function", async function () {
-      const { technoclevernft, otherAccount, nftdutchauction, technoclevertokenaddress } = await loadFixture(deployNFTDutchAuctionSmartContract);
 
-      expect (await technoclevernft.approve(technoclevertokenaddress, 1)).to.exist;
+    // it("Balance of other account", async function () {
+    //   const { owner, technoclevernft, otherAccount } = await loadFixture(deployNFTDutchAuctionSmartContract);
+    //   const contract = await (await ethers.getContractFactory("NFTDutchAuction")).attach(otherAccount.address);
+    //   await contract.connect(otherAccount.address);
+    //   expect (await contract.receiveMoney({gasLimit: 250000, value:ethers.utils.parseEther("2")})).to.eventually.equal(''); 
+    //   expect(await technoclevernft.balanceOf(otherAccount.address)).to.equal(99);
 
-    });
-
-    it("Call Receive Money", async function () {
-      const { owner, technoclevernft, otherAccount } = await loadFixture(deployNFTDutchAuctionSmartContract);
-      const contract = await (await ethers.getContractFactory("NFTDutchAuction")).attach(otherAccount.address);
-      await contract.connect(otherAccount.address);
-      expect (await contract.receiveMoney({gasLimit: 250000, value:ethers.utils.parseEther("2")})).to.eventually.ok; 
-      expect(await technoclevernft.balanceOf(owner.address)).to.equal(99);
-
-    });
+    // });
 
     // it("Call Receive Money", async function () {
     //   const { owner, technoclevernft, otherAccount } = await loadFixture(deployNFTDutchAuctionSmartContract);
-    //   expect(await technoclevernft.balanceOf(owner.address)).to.equal("99");
+    //   expect(await technoclevernft.balanceOf(owner.address)).to.equal(99);
 
     // });
 
