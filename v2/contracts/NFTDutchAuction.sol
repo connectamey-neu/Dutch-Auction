@@ -17,7 +17,7 @@ contract NFTDutchAuction {
     IERC721 public immutable nft;
     uint public nftTokenId;
     address payable public immutable seller;
-    address payable public sender;
+    address payable public  sender;
 
     constructor(address erc721TokenAddress, uint256 _nftTokenId, uint256 _reservePrice, uint256 _numBlocksAuctionOpen, uint256 _offerPriceDecrement) {
         startAt = block.number;
@@ -43,12 +43,14 @@ contract NFTDutchAuction {
 
     function receiveMoney() public payable {
         finalPrice = price();
-        sender = payable(msg.sender);
-           require(msg.value >= finalPrice, "Not enough ether sent.");
-        require(seller == address(4), "Someone has already bought the NFT");
-        console.log("seller: ", seller);
+         console.log("seller: ", seller);
+         console.log("sender: ", sender);
          console.log("sender: ", msg.sender);
-        //  console.log("Owner is ", ownerOf(1));
+         console.log("Token ID: ", nftTokenId);
+         console.log("Address 0", address(0));
+         console.log("Address 1", address(1));
+        // require(seller == address(0), "Someone has already bought the NFT");
+        require(msg.value >= finalPrice, "Not enough ether sent.");
         nft.transferFrom(seller, msg.sender, nftTokenId);
         uint refund = msg.value - finalPrice;
         if (refund > 0) {
@@ -56,10 +58,11 @@ contract NFTDutchAuction {
         }
         selfdestruct(seller);
 
-
     }
-      function modifyBlockNumber() public {
+
+          function modifyBlockNumber() public {
     blocknumber = 15;
   }
+
 
 }

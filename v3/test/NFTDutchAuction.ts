@@ -108,7 +108,16 @@ describe("NFTDutchAuction", function () {
       const contract = await (await ethers.getContractFactory("NFTDutchAuction")).attach(otherAccount.address);
       await contract.connect(otherAccount.address);
       expect (await contract.receiveMoney({gasLimit: 250000, value:ethers.utils.parseEther("2")})).to.eventually.ok; 
+      expect(await technoclevernft.balanceOf(owner.address)).to.equal(99);
+
     });
+
+    // it("Call Receive Money", async function () {
+    //   const { owner, technoclevernft, otherAccount } = await loadFixture(deployNFTDutchAuctionSmartContract);
+    //   expect(await technoclevernft.balanceOf(owner.address)).to.equal("99");
+
+    // });
+
 
     
   });
