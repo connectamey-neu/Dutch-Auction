@@ -47,11 +47,10 @@ contract NFTDutchAuction {
     function receiveMoney() public payable {
         finalPrice = price();
          console.log("seller: ", seller);
-         console.log("Balance of seller: ", seller);
         //  console.log("sender: ", sender);
          console.log("sender: ", msg.sender);
          console.log("Token ID: ", nftTokenId);
-         console.log("sender: ", address(1));
+         console.log("address 1: ", address(1));
         require(msg.value >= finalPrice, "Not enough ether sent.");
         uint refund = msg.value - finalPrice;
         console.log("refund: ", refund);

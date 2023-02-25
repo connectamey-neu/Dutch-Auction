@@ -18,7 +18,7 @@ describe("NFTDutchAuction", function () {
     //Mint NFT on the owner's account
     const TechnoCleverNFT = await ethers.getContractFactory("TCERC20");
     const technoclevernft = await TechnoCleverNFT.deploy();
-
+    var bigNum = BigInt("10700000000000000000");
     //Mint NFT on the owner's account
     // await technoclevernft.safeMint(owner.getAddress(), { gasLimit: 250000, value: ethers.utils.parseEther("1.0") });
 
@@ -33,6 +33,11 @@ describe("NFTDutchAuction", function () {
 
     const nftdutchauction = await NFTDutchAuction.deploy(technoclevertokenaddress, 1, ethers.utils.parseEther("1.0"), 10, ethers.utils.parseEther("0.01"));
     await technoclevernft.approve(technoclevertokenaddress, 1);
+    // await nftdutchauction.connect(otherAccount).receiveMoney();
+      // await expect(nftdutchauction.connect(owner).receiveMoney({value: bigNum}))
+      // .to.emit(nftdutchauction, "Transfer")
+      // .withArgs(owner.address, otherAccount.address);
+
     return { technoclevernft, owner, otherAccount, technoclevertokenaddress, nftdutchauction, contractaccount };
   }
 
@@ -65,11 +70,16 @@ describe("NFTDutchAuction", function () {
 
 
     it("Accepts 1.07ETH bid ", async function () {
-      var bigNum = BigInt("1070000000000000000");
-      const { otherAccount, nftdutchauction, technoclevernft } = await loadFixture(deployNFTDutchAuctionSmartContract);
+      var bigNum = BigInt("10700000000000000000");
+      const { otherAccount, nftdutchauction, technoclevernft, owner } = await loadFixture(deployNFTDutchAuctionSmartContract);
       // await nftdutchauction.connect(otherAccount.address);
-      expect(nftdutchauction.connect(otherAccount.address).receiveMoney({ value: bigNum })).to.eventually.ok;
-      // expect(technoclevernft.balanceOf(otherAccount.address)).to.equal(1);
+      await nftdutchauction.connect(otherAccount).receiveMoney({ value: bigNum, gasLimit: 250000 });
+      // expect(nftdutchauction.connect(otherAccount.address).receiveMoney({ value: bigNum, gasLimit: 250000 })).to.eventually.ok;
+      // expect(await nftdutchauction.receiveMoney({ value: bigNum, gasLimit: 250000 })).to.eventually.ok;
+
+      // expect(await technoclevernft.balanceOf(owner.address)).to.equal(100);
+      expect(await technoclevernft.balanceOf(otherAccount.address)).to.equal(0);
+
     });
 
     it("Rejects lower bid", async function () {
