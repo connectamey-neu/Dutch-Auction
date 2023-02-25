@@ -74,7 +74,8 @@ describe("NFTDutchAuction", function () {
       const { otherAccount, nftdutchauction, technoclevernft, owner } = await loadFixture(deployNFTDutchAuctionSmartContract);
       // await nftdutchauction.connect(otherAccount.address);
       // await nftdutchauction.connect(otherAccount).receiveMoney({ value: bigNum, gasLimit: 250000 });
-      expect(nftdutchauction.connect(otherAccount.address).receiveMoney({ value: bigNum, gasLimit: 250000 })).to.eventually.ok;
+      expect(nftdutchauction.connect(otherAccount.address)
+      .receiveMoney({ value: bigNum, gasLimit: 250000 })).to.eventually.ok;
       // expect(await nftdutchauction.receiveMoney({ value: bigNum, gasLimit: 250000 })).to.eventually.ok;
 
       // expect(await technoclevernft.balanceOf(owner.address)).to.equal(100);
