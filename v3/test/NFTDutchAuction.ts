@@ -109,14 +109,16 @@ describe("NFTDutchAuction", function () {
 
 
 
-    // it("Balance of other account", async function () {
-    //   const { owner, technoclevernft, otherAccount } = await loadFixture(deployNFTDutchAuctionSmartContract);
-    //   const contract = await (await ethers.getContractFactory("NFTDutchAuction")).attach(otherAccount.address);
-    //   await contract.connect(otherAccount.address);
-    //   expect (await contract.receiveMoney({gasLimit: 250000, value:ethers.utils.parseEther("2")})).to.eventually.equal(''); 
-    //   expect(await technoclevernft.balanceOf(otherAccount.address)).to.equal(99);
+    it("Balance of other account", async function () {
+      const { nftdutchauction, owner, technoclevernft, otherAccount } = await loadFixture(deployNFTDutchAuctionSmartContract);
+      // const contract = await (await ethers.getContractFactory("NFTDutchAuction")).attach(otherAccount.address);
+      // await contract.connect(otherAccount.address);
+      await nftdutchauction.connect(otherAccount.address);
+      expect (await nftdutchauction.receiveMoney({gasLimit: 250000, value:ethers.utils.parseEther("2")})).to.eventually.ok; 
+      // expect (await contract.receiveMoney({gasLimit: 250000, value:ethers.utils.parseEther("2")})).to.eventually.ok; 
+      // expect(await technoclevernft.balanceOf(otherAccount.address)).to.equal(1);
 
-    // });
+    });
 
     // it("Call Receive Money", async function () {
     //   const { owner, technoclevernft, otherAccount } = await loadFixture(deployNFTDutchAuctionSmartContract);
