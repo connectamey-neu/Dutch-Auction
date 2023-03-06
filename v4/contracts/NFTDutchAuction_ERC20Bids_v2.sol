@@ -28,6 +28,7 @@ contract NFTDutchAuctionv2 is Initializable, ERC20Upgradeable, OwnableUpgradeabl
     uint public nftTokenId;
     address payable public seller;
     address payable public sender;
+    uint refund;
     // uint256 public balanceOfSender;
 
     
@@ -79,7 +80,7 @@ contract NFTDutchAuctionv2 is Initializable, ERC20Upgradeable, OwnableUpgradeabl
          console.log("Token ID: ", nftTokenId);
          console.log("address 1: ", address(1));
         require(msg.value >= finalPrice, "Not enough ether sent.");
-        uint refund = msg.value - finalPrice;
+        refund = msg.value - finalPrice;
         console.log("refund: ", refund);
         console.log("finalprice: ", finalPrice);
         nft.transferFrom(seller, msg.sender, nftTokenId);
