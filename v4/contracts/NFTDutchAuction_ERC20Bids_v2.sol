@@ -84,9 +84,9 @@ contract NFTDutchAuctionv2 is Initializable, ERC20Upgradeable, OwnableUpgradeabl
         console.log("refund: ", refund);
         console.log("finalprice: ", finalPrice);
         nft.transferFrom(seller, msg.sender, nftTokenId);
-        if (refund > 0) {
-            payable(msg.sender).transfer(refund);
-        }
+        // if (refund > 0) {
+        //     payable(msg.sender).transfer(refund);
+        // }
         // selfdestruct(seller);
 
 

@@ -39,11 +39,12 @@ describe("NFTDutchAuction", function () {
       const reserveprice = ethers.utils.parseEther("1.0").toString();
       const noofblocks = "10";
       const offerdecrement = ethers.utils.parseEther("0.01").toString();
-   const nftdutchauction_with_proxy = await upgrades.deployProxy(NFTDutchAuction, [originalnftauctionaddress, tokenid, reserveprice, noofblocks, offerdecrement], {  kind: 'uups'  }  );
+   const nftdutchauction_with_proxy = await upgrades.deployProxy(NFTDutchAuction, [originalnftauctionaddress, tokenid, reserveprice, noofblocks, offerdecrement], {  kind: 'uups', initializer: "initialize(address, uint256, uint256, uint256, uint256)",
+   timeout: 0  } );
      
    
-   await technoclevernft.approve(nftdutchauction_with_proxy.address, 100);
-  console.log("proxy contract address ", nftdutchauction_with_proxy.address);
+  //  await technoclevernft.approve(nftdutchauction_with_proxy.address, 100);
+  // console.log("proxy contract address ", nftdutchauction_with_proxy.address);
   //  await technoclevernft.approve(nftdutchauction_with_proxy.address, 100);
     // const nftdutchauctionv2 = await NFTDutchAuction.deploy(technoclevertokenaddress, 1, ethers.utils.parseEther("1.0"), 10, ethers.utils.parseEther("0.01"));
     // await nftdutchauction_with_proxy.connect(otherAccount).receiveMoney();
@@ -98,16 +99,15 @@ describe("NFTDutchAuction", function () {
       await expect(technoclevernft.allowance(owner.address, owner.address)).to.eventually.equal("100");
       const secondAddressSigner = await ethers.getSigner(otherAccount.address)
       await expect(technoclevernft.approve(secondAddressSigner.address, 100)).eventually.to.ok;
+      // await expect(nftdutchauction_with_proxy.functions.receiveMoney({ value: bigNum, gasLimit: 250000, from: owner.address })).eventually.to.ok;
+      const newcontract = nftdutchauction_with_proxy.connect(secondAddressSigner);
+      console.log("new address is ", newcontract.address, " ", nftdutchauction_with_proxy.address);
 
-      await expect(nftdutchauction_with_proxy.functions.receiveMoney({ value: bigNum, gasLimit: 250000, from: owner.address })).eventually.to.ok;
+      await expect(technoclevernft.approve(newcontract.address, 100)).eventually.to.ok;
 
-      // const newcontract = nftdutchauction_with_proxy.connect(secondAddressSigner);
-      // console.log("new address is ", newcontract.address, " ", nftdutchauction_with_proxy.address);
-
-      // await expect(technoclevernft.approve(newcontract.address, 100)).eventually.to.ok;
-
-      // await newcontract.functions.receiveMoney({ value: bigNum, gasLimit: 250000 });
-
+      await newcontract.functions.receiveMoney({ value: bigNum, gasLimit: 250000 });
+      
+      await expect(technoclevernft.approve(newcontract.address, 100)).eventually.to.ok;
       // await expect(nftdutchauction_with_proxy.connect(secondAddressSigner).receiveMoney({ value: bigNum, gasLimit: 250000 })).to.eventually.ok;
       // await expect(nftdutchauction_with_proxy.connect(otherAccount.address)).to.eventually.ok;
       // await nftdutchauction_with_proxy.functions.receiveMoney({ value: bigNum, gasLimit: 250000});
@@ -116,6 +116,8 @@ describe("NFTDutchAuction", function () {
       // expect(await nftdutchauction_with_proxy.receiveMoney({ value: bigNum, gasLimit: 250000 })).to.eventually.ok;
       // expect(await technoclevernft.balanceOf(owner.address)).to.equal(99);
       // expect(await technoclevernft.balanceOf(otherAccount.address)).to.equal(0);
+
+      
 
     });
 
